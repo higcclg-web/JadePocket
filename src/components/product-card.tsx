@@ -3,12 +3,10 @@
 import { Product, Image as PrismaImage } from "@prisma/client"
 import Image from "next/image"
 import Link from "next/link"
+import { cn, formatPrice } from "../lib/utils"
 import { motion } from "framer-motion"
 import { ShoppingBag, Eye } from "lucide-react"
 import { useState } from "react"
-
-// use relative import to avoid alias issues
-import { formatPrice, cn } from "../lib/utils"
 
 interface ProductWithImages extends Product {
   images: PrismaImage[]
@@ -23,13 +21,20 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  // null‑safe sale logic
-  const compare = product.compareAtCents ?? null
+  const hasCompareAt =
+    typeof product.compareAtCents === "number" && product.compareAtCents > 0
+
   const isOnSale =
-    typeof compare === "number" && compare > product.priceCents && compare > 0
-  const salePercentage = isOnSale
-    ? Math.round(((compare - product.priceCents) / compare) * 100)
-    : 0
+    hasCompareAt && product.compareAtCents! > product.priceCents
+
+  const salePercentage =
+    isOnSale && product.compareAtCents
+      ? Math.round(
+          ((product.compareAtCents - product.priceCents) /
+            product.compareAtCents) *
+            100
+        )
+      : 0
 
   return (
     <motion.div
@@ -53,7 +58,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Out of Stock Overlay */}
           {product.inventory === 0 && (
             <div className="absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
-              <span className="text-white font-semibold text-lg">Out of Stock</span>
+              <span className="text-white font-semibold text-lg">
+                Out of Stock
+              </span>
             </div>
           )}
 
@@ -113,9 +120,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
             <span className="text-lg font-semibold text-gray-900">
               {formatPrice(product.priceCents)}
             </span>
-            {compare != null && (
+            {hasCompareAt && (
               <span className="text-sm text-gray-500 line-through">
-                {formatPrice(compare)}
+                {formatPrice(product.compareAtCents!)}
               </span>
             )}
           </div>
@@ -132,7 +139,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 </span>
               ))}
               {product.tags.length > 2 && (
-                <span className="text-xs text-gray-500">+{product.tags.length - 2}</span>
+                <span className="text-xs text-gray-500">
+                  +{product.tags.length - 2}
+                </span>
               )}
             </div>
           )}
