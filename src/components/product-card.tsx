@@ -1,12 +1,14 @@
 "use client"
 
-import { Product, Image as PrismaImage } from '@prisma/client'
-import Image from 'next/image'
-import Link from 'next/link'
-import { formatPrice, cn } from '@/lib/utils' // if alias fails, use: ../lib/utils
-import { motion } from 'framer-motion'
-import { ShoppingBag, Eye } from 'lucide-react'
-import { useState } from 'react'
+import { Product, Image as PrismaImage } from "@prisma/client"
+import Image from "next/image"
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { ShoppingBag, Eye } from "lucide-react"
+import { useState } from "react"
+
+// use relative import to avoid alias issues
+import { formatPrice, cn } from "../lib/utils"
 
 interface ProductWithImages extends Product {
   images: PrismaImage[]
@@ -21,7 +23,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  // ---- FIX: null‑safe compareAtCents ----
+  // null‑safe sale logic
   const compare = product.compareAtCents ?? null
   const isOnSale =
     typeof compare === "number" && compare > product.priceCents && compare > 0
@@ -39,6 +41,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     >
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 aspect-square">
+          {/* Sale Badge */}
           {isOnSale && (
             <div className="absolute top-3 left-3 z-10">
               <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
@@ -47,12 +50,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </div>
           )}
 
+          {/* Out of Stock Overlay */}
           {product.inventory === 0 && (
             <div className="absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
               <span className="text-white font-semibold text-lg">Out of Stock</span>
             </div>
           )}
 
+          {/* Product Image */}
           {product.images?.[0] && !imageError ? (
             <Image
               src={product.images[0].url}
@@ -73,6 +78,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </div>
           )}
 
+          {/* Hover Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
@@ -88,17 +94,21 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </motion.div>
         </div>
 
+        {/* Product Info */}
         <div className="mt-4 space-y-1">
+          {/* Brand */}
           {product.brand && (
             <p className="text-xs font-medium text-jade-600 uppercase tracking-wide">
               {product.brand}
             </p>
           )}
 
+          {/* Title */}
           <h3 className="font-medium text-gray-900 group-hover:text-jade-600 transition-colors line-clamp-2">
             {product.title}
           </h3>
 
+          {/* Price */}
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-lg font-semibold text-gray-900">
               {formatPrice(product.priceCents)}
@@ -110,6 +120,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             )}
           </div>
 
+          {/* Tags */}
           {product.tags && product.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {product.tags.slice(0, 2).map((tag, index) => (
@@ -126,6 +137,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </div>
           )}
 
+          {/* Stock Indicator */}
           <div className="flex items-center gap-2 mt-2">
             {product.inventory > 0 && product.inventory <= 5 && (
               <span className="text-xs text-orange-600 font-medium">
