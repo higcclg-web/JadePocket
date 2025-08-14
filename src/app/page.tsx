@@ -1,113 +1,99 @@
-import { prisma } from '@/lib/db'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ProductCard } from '@/components/product-card'
-import Link from 'next/link'
-import { ArrowRight, Sparkles, Truck, Shield, Clock } from 'lucide-react'
+// src/app/page.tsx
+export const dynamic = "force-dynamic"; // run at request time, not at build
+export const revalidate = 0;             // no ISR cache
 
-export default async function HomePage() {
-  const products = await prisma.product.findMany({
-    where: { status: 'PUBLISHED' },
-    include: { images: true },
-    take: 8,
-  })
+import Link from "next/link";
+import { prisma } from "../lib/db";
+import { ProductCard } from "../components/product-card";
+
+export default async function Home() {
+  // Fetch latest products (safe if DB is down)
+  let products:
+    | Array<
+        Awaited<ReturnType<typeof prisma.product.findMany>>[number] & {
+          images: Awaited<
+            ReturnType<typeof prisma.image.findMany>
+          >;
+        }
+      >
+    | [] = [];
+
+  try {
+    products = await prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 24,
+      include: { images: true },
+    });
+  } catch (e) {
+    console.warn("[home] DB unavailable, rendering empty state:", e);
+    products = [];
+  }
+
+  const hasProducts = products.length > 0;
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-charcoal-900 via-charcoal-800 to-jade-900 opacity-95" />
-        <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center mix-blend-overlay opacity-20" />
-        
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-playfair font-bold text-white mb-6 animate-fade-in">
-            Welcome to <span className="text-gradient">JadePocketShop</span>
+    <main className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-10">
+      {/* Hero */}
+      <section className="rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-100 p-8 md:p-12 border border-emerald-200/60 shadow-sm">
+        <div className="max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-gray-900">
+            JadePocketShop
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 font-light">
-            Discover luxury in every detail
+          <p className="mt-4 text-gray-700 md:text-lg">
+            Luxurious, modern, high‑tech essentials — curated, affordable, and updated
+            constantly.
           </p>
-          
-          {products.length > 0 ? (
-            <Link href="/shop">
-              <Button size="lg" className="text-lg px-8 py-6 jade-glow">
-                Explore Collection
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+          <div className="mt-6 flex gap-3">
+            <Link
+              href="/shop"
+              className="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition"
+            >
+              Shop Now
             </Link>
-          ) : (
-            <div className="space-y-6">
-              <div className="glass p-8 rounded-2xl max-w-md mx-auto">
-                <Sparkles className="h-12 w-12 text-jade mx-auto mb-4" />
-                <h2 className="text-2xl font-playfair text-white mb-3">Coming Soon</h2>
-                <p className="text-white/80 mb-6">
-                  Be the first to know when we launch our exclusive collection
-                </p>
-                <form className="flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                  />
-                  <Button type="submit" variant="default">
-                    Notify Me
-                  </Button>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center group">
-            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
-              <Truck className="h-8 w-8 text-jade" />
-            </div>
-            <h3 className="text-xl font-playfair font-semibold mb-2">Free Shipping</h3>
-            <p className="text-charcoal-600">On orders over $50</p>
-          </div>
-          <div className="text-center group">
-            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
-              <Shield className="h-8 w-8 text-jade" />
-            </div>
-            <h3 className="text-xl font-playfair font-semibold mb-2">Secure Payment</h3>
-            <p className="text-charcoal-600">100% secure transactions</p>
-          </div>
-          <div className="text-center group">
-            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
-              <Clock className="h-8 w-8 text-jade" />
-            </div>
-            <h3 className="text-xl font-playfair font-semibold mb-2">30-Day Returns</h3>
-            <p className="text-charcoal-600">Easy returns policy</p>
+            <Link
+              href="/about"
+              className="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 transition"
+            >
+              Learn More
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Products Grid */}
-      {products.length > 0 && (
-        <section className="py-16 px-4 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl font-playfair font-bold text-center mb-12">
-              Featured Products
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Link href="/shop">
-                <Button size="lg" variant="outline">
-                  View All Products
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+      {/* Product grid or empty state */}
+      <section className="mt-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+            New Arrivals
+          </h2>
+          <Link
+            href="/shop"
+            className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          >
+            View all →
+          </Link>
+        </div>
+
+        {hasProducts ? (
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {products.map((product) => (
+              // @ts-expect-error — product includes images via include above
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
-        </section>
-      )}
-    </div>
-  )
+        ) : (
+          <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-10 text-center">
+            <h3 className="text-lg font-semibold text-gray-900">Coming Soon</h3>
+            <p className="mt-2 text-gray-600">
+              We’re stocking the shelves. Check back shortly or visit{" "}
+              <Link href="/admin" className="text-emerald-700 underline">
+                the admin panel
+              </Link>{" "}
+              to import products.
+            </p>
+          </div>
+        )}
+      </section>
+    </main>
+  );
 }
