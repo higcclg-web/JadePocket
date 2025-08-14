@@ -10,9 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function ProductPage({
   params,
 }: {
-  params: { slug: string } | Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  // Works whether params is a Promise or a plain object
   const { slug } = await params;
 
   const product = await prisma.product.findUnique({
@@ -24,7 +23,7 @@ export default async function ProductPage({
     notFound();
   }
 
-  const primaryImage = product.images?.[0];
+  const primaryImage = product.images?.[0] ?? null;
   const isOnSale =
     product.compareAtCents != null && product.compareAtCents > product.priceCents;
 
