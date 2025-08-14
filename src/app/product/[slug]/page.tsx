@@ -7,12 +7,18 @@ import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+// Helper: accept either a value or a Promise of that value.
+type MaybePromise<T> = T | Promise<T>;
+async function unwrap<T>(value: MaybePromise<T>): Promise<T> {
+  return await value;
+}
+
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: MaybePromise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const { slug } = await unwrap(params);
 
   const product = await prisma.product.findUnique({
     where: { slug },
