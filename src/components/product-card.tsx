@@ -21,20 +21,13 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  const hasCompareAt =
-    typeof product.compareAtCents === "number" && product.compareAtCents > 0
+  const compareAt = product.compareAtCents ?? 0
+  const price = product.priceCents ?? 0
 
-  const isOnSale =
-    hasCompareAt && product.compareAtCents! > product.priceCents
-
-  const salePercentage =
-    isOnSale && product.compareAtCents
-      ? Math.round(
-          ((product.compareAtCents - product.priceCents) /
-            product.compareAtCents) *
-            100
-        )
-      : 0
+  const isOnSale = compareAt > price && compareAt > 0
+  const salePercentage = isOnSale
+    ? Math.round(((compareAt - price) / compareAt) * 100)
+    : 0
 
   return (
     <motion.div
@@ -118,11 +111,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {/* Price */}
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-lg font-semibold text-gray-900">
-              {formatPrice(product.priceCents)}
+              {formatPrice(price)}
             </span>
-            {hasCompareAt && (
+            {compareAt > 0 && (
               <span className="text-sm text-gray-500 line-through">
-                {formatPrice(product.compareAtCents!)}
+                {formatPrice(compareAt)}
               </span>
             )}
           </div>
