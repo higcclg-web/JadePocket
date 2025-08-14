@@ -1,103 +1,113 @@
-import Image from "next/image";
+import { prisma } from '@/lib/db'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ProductCard } from '@/components/product-card'
+import Link from 'next/link'
+import { ArrowRight, Sparkles, Truck, Shield, Clock } from 'lucide-react'
 
-export default function Home() {
+export default async function HomePage() {
+  const products = await prisma.product.findMany({
+    where: { status: 'PUBLISHED' },
+    include: { images: true },
+    take: 8,
+  })
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div>
+      {/* Hero Section */}
+      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-charcoal-900 via-charcoal-800 to-jade-900 opacity-95" />
+        <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center mix-blend-overlay opacity-20" />
+        
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-playfair font-bold text-white mb-6 animate-fade-in">
+            Welcome to <span className="text-gradient">JadePocketShop</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-white/90 mb-8 font-light">
+            Discover luxury in every detail
+          </p>
+          
+          {products.length > 0 ? (
+            <Link href="/shop">
+              <Button size="lg" className="text-lg px-8 py-6 jade-glow">
+                Explore Collection
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          ) : (
+            <div className="space-y-6">
+              <div className="glass p-8 rounded-2xl max-w-md mx-auto">
+                <Sparkles className="h-12 w-12 text-jade mx-auto mb-4" />
+                <h2 className="text-2xl font-playfair text-white mb-3">Coming Soon</h2>
+                <p className="text-white/80 mb-6">
+                  Be the first to know when we launch our exclusive collection
+                </p>
+                <form className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  />
+                  <Button type="submit" variant="default">
+                    Notify Me
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 px-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center group">
+            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
+              <Truck className="h-8 w-8 text-jade" />
+            </div>
+            <h3 className="text-xl font-playfair font-semibold mb-2">Free Shipping</h3>
+            <p className="text-charcoal-600">On orders over $50</p>
+          </div>
+          <div className="text-center group">
+            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
+              <Shield className="h-8 w-8 text-jade" />
+            </div>
+            <h3 className="text-xl font-playfair font-semibold mb-2">Secure Payment</h3>
+            <p className="text-charcoal-600">100% secure transactions</p>
+          </div>
+          <div className="text-center group">
+            <div className="h-16 w-16 rounded-full bg-jade/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-jade/20 transition-colors">
+              <Clock className="h-8 w-8 text-jade" />
+            </div>
+            <h3 className="text-xl font-playfair font-semibold mb-2">30-Day Returns</h3>
+            <p className="text-charcoal-600">Easy returns policy</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Products Grid */}
+      {products.length > 0 && (
+        <section className="py-16 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-4xl font-playfair font-bold text-center mb-12">
+              Featured Products
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Link href="/shop">
+                <Button size="lg" variant="outline">
+                  View All Products
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
-  );
+  )
 }

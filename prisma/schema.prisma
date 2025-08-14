@@ -1,0 +1,122 @@
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum OrderStatus {
+  CREATED
+  PAID
+  FULFILLED
+  REFUNDED
+  CANCELED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  role          String    @default("customer")
+  passwordHash  String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+model Product {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  brand            String?
+  description      String        @db.Text
+  priceCents       Int
+  compareAtCents   Int?
+  currency         String        @default("USD")
+  sku              String?       @unique
+  inventory        Int           @default(0)
+  status           ProductStatus @default(DRAFT)
+  tags             String[]
+  images           Image[]
+  orderLines       OrderLine[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([status])
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  sort      Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  stripeId         String?     @unique
+  email            String
+  amountCents      Int
+  currency         String      @default("USD")
+  status           OrderStatus @default(CREATED)
+  lines            OrderLine[]
+  shippingName     String?
+  shippingAddress  Json?
+  tracking         String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([stripeId])
+}
+
+model OrderLine {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  title      String
+  quantity   Int
+  priceCents Int
+  createdAt  DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model BrandAuthorization {
+  id        String   @id @default(cuid())
+  brand     String   @unique
+  fileUrl   String
+  fileName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailCapture {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String?  @default("homepage")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
