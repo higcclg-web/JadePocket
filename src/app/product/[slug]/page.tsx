@@ -7,12 +7,12 @@ import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-// Next 15 may type `params` as a Promise—so we await it.
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string } | Promise<{ slug: string }>;
 }) {
+  // Works whether params is a Promise or a plain object
   const { slug } = await params;
 
   const product = await prisma.product.findUnique({
@@ -25,7 +25,6 @@ export default async function ProductPage({
   }
 
   const primaryImage = product.images?.[0];
-
   const isOnSale =
     product.compareAtCents != null && product.compareAtCents > product.priceCents;
 
