@@ -5,14 +5,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 
-export const dynamic = "force-dynamic"; // fetch at request time (avoids build errors)
+export const dynamic = "force-dynamic";
 
-type PageProps = {
-  params: { slug: string };
-};
-
-export default async function ProductPage({ params }: PageProps) {
-  const { slug } = params;
+// Next 15 may type `params` as a Promise—so we await it.
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
   const product = await prisma.product.findUnique({
     where: { slug },
@@ -26,9 +27,7 @@ export default async function ProductPage({ params }: PageProps) {
   const primaryImage = product.images?.[0];
 
   const isOnSale =
-    product.compareAtCents !== null &&
-    product.compareAtCents !== undefined &&
-    product.compareAtCents > product.priceCents;
+    product.compareAtCents != null && product.compareAtCents > product.priceCents;
 
   const salePct = isOnSale
     ? Math.round(
@@ -40,7 +39,7 @@ export default async function ProductPage({ params }: PageProps) {
     <main className="mx-auto max-w-5xl px-4 py-10">
       <Link
         href="/"
-        className="text-sm text-emerald-700 hover:underline inline-flex items-center gap-1"
+        className="inline-flex items-center gap-1 text-sm text-emerald-700 hover:underline"
       >
         ← Back to shop
       </Link>
@@ -52,8 +51,6 @@ export default async function ProductPage({ params }: PageProps) {
               src={primaryImage.url}
               alt={primaryImage.alt || product.title}
               fill
-              // If your image domain isn’t in next.config.js remotePatterns,
-              // `unoptimized` prevents errors while you test:
               unoptimized
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -91,7 +88,7 @@ export default async function ProductPage({ params }: PageProps) {
             )}
           </div>
 
-          {product.inventory !== null && product.inventory !== undefined && (
+          {product.inventory != null && (
             <p className="mt-2 text-sm text-gray-600">
               {product.inventory > 0
                 ? product.inventory <= 5
