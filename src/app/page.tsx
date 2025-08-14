@@ -1,29 +1,26 @@
 // src/app/page.tsx
-export const dynamic = "force-dynamic"; // run at request time, not at build
-export const revalidate = 0;             // no ISR cache
+export const dynamic = "force-dynamic"; // render at request time (no build-time DB calls)
+export const revalidate = 0;             // disable ISR cache
 
 import Link from "next/link";
 import { prisma } from "../lib/db";
 import { ProductCard } from "../components/product-card";
 
+type ProductWithImages = Awaited<
+  ReturnType<typeof prisma.product.findMany>
+>[number] & {
+  images: Awaited<ReturnType<typeof prisma.image.findMany>>;
+};
+
 export default async function Home() {
-  // Fetch latest products (safe if DB is down)
-  let products:
-    | Array<
-        Awaited<ReturnType<typeof prisma.product.findMany>>[number] & {
-          images: Awaited<
-            ReturnType<typeof prisma.image.findMany>
-          >;
-        }
-      >
-    | [] = [];
+  let products: ProductWithImages[] = [];
 
   try {
     products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
       take: 24,
       include: { images: true },
-    });
+    }) as ProductWithImages[];
   } catch (e) {
     console.warn("[home] DB unavailable, rendering empty state:", e);
     products = [];
@@ -40,8 +37,7 @@ export default async function Home() {
             JadePocketShop
           </h1>
           <p className="mt-4 text-gray-700 md:text-lg">
-            Luxurious, modern, high‑tech essentials — curated, affordable, and updated
-            constantly.
+            Luxurious, modern, high‑tech essentials — curated, affordable, and updated constantly.
           </p>
           <div className="mt-6 flex gap-3">
             <Link
@@ -76,9 +72,10 @@ export default async function Home() {
 
         {hasProducts ? (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {products.map((product) => (
-              // @ts-expect-error — product includes images via include above
-              <ProductCard key={product.id} product={product} />
+            {/* ProductCard expects product with images included */}
+            {products.map((p) => (
+              // @ts-expect-error enriched type above ensures images exist
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         ) : (
