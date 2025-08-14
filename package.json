@@ -2,13 +2,17 @@
   "name": "jadepocketshop",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "next dev --turbopack",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "prisma": "npx dotenv-cli -- prisma"
-},
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma": "npx dotenv-cli -- prisma",
+    "postinstall": "prisma generate"
+  },
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-slot": "^1.2.3",
