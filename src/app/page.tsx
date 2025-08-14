@@ -1,4 +1,3 @@
-// src/app/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -42,7 +41,7 @@ export default function Home() {
             JadePocketShop
           </h1>
           <p className="mt-4 text-gray-700 md:text-lg">
-            Luxurious, modern, high‑tech essentials — curated, affordable, and updated constantly.
+            Luxurious, modern, high-tech essentials — curated, affordable, and updated constantly.
           </p>
           <div className="mt-6 flex gap-3">
             <Link
